@@ -9,8 +9,8 @@ import numpy as np
 
 class PUAdapter(object):
     '''
-    Adapts any binary classifier to positive-unlabled learning using the method proposed
-    by Elkan and Noto:
+    Adapts any binary classifier that can predict the probabiity of an example being positive to positive-unlabled
+    learning using the method proposed by Elkan and Noto:
     
     Elkan, Charles, and Keith Noto. "Learning classifiers from only positive and unlabeled data."
     Proceeding of the 14th ACM SIGKDD international conference on Knowledge discovery and data mining. ACM, 2008.
