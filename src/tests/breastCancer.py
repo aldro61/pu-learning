@@ -17,9 +17,11 @@ the negative examples are contaminated with positive examples. We call this situ
 unlabled learning.
 '''
 import numpy as np
+import matplotlib.pyplot as plt
 from puLearning.puAdapter import PUAdapter
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import precision_recall_fscore_support
+
 
 def load_breast_cancer(path):
     f = open(path)
@@ -59,59 +61,71 @@ if __name__ == '__main__':
     print len(np.where(y == +1.)[0])," are malignant"
     print
 
-    #send some positives to the negative class! :)
-    n_sacrifice = 150
-    print "PU transformation in progress."
-    print "Making ", n_sacrifice, " malignant examples bening."
-    print
-    y_pu = np.copy(y)
-    pos = np.where(y == +1.)[0]
-    np.random.shuffle(pos)
-    sacrifice = pos[:n_sacrifice]
-    y_pu[sacrifice] = -1.
+    pu_f1_scores = []
+    reg_f1_scores = []
+    n_sacrifice_iter = range(0, len(np.where(y == +1.)[0]), 10)
+    for n_sacrifice in n_sacrifice_iter:
+        #send some positives to the negative class! :)
+        print "PU transformation in progress."
+        print "Making ", n_sacrifice, " malignant examples bening."
+        print
+        y_pu = np.copy(y)
+        pos = np.where(y == +1.)[0]
+        np.random.shuffle(pos)
+        sacrifice = pos[:n_sacrifice]
+        y_pu[sacrifice] = -1.
+        
+        print "PU transformation applied. We now have:"
+        print len(np.where(y_pu == -1.)[0])," are bening"
+        print len(np.where(y_pu == +1.)[0])," are malignant"
+        print
+        
     
-    print "PU transformation applied. We now have:"
-    print len(np.where(y_pu == -1.)[0])," are bening"
-    print len(np.where(y_pu == +1.)[0])," are malignant"
-    print
-    
-
-    #Split test/train
-    half = len(y)/2
-    X_train = X[:half]
-    y_train_true = y[:half]
-    y_train_pu = y_pu[:half]
-    X_test = X[half:]
-    y_test_true = y[half:]
-    y_test_pu = y_pu[half:]
-    
-    #Get f1 score with pu_learning
-    print "PU learning in progress..."
-    estimator = RandomForestClassifier(n_estimators=100,
-                                       criterion='gini', 
-                                       bootstrap=True,
-                                       n_jobs=1)
-    pu_estimator = PUAdapter(estimator)
-    pu_estimator.fit(X_train,y_train_pu)
-    y_pred = pu_estimator.predict(X_test)
-    precision, recall, f1_score, _ = precision_recall_fscore_support(y_test_true, y_pred)
-    print "F1 score: ", f1_score[1]
-    print "Precision: ", precision[1]
-    print "Recall: ", recall[1]
-    print
-    
-    #Get f1 score without pu_learning
-    print "Regular learning in progress..."
-    estimator = RandomForestClassifier(n_estimators=100,
-                                       criterion='gini', 
-                                       bootstrap=True,
-                                       n_jobs=1)
-    estimator.fit(X_train,y_train_pu)
-    y_pred = estimator.predict(X_test)
-    precision, recall, f1_score, _ = precision_recall_fscore_support(y_test_true, y_pred)
-    print "F1 score: ", f1_score[1]
-    print "Precision: ", precision[1]
-    print "Recall: ", recall[1]
-    print
-    print
+        #Split test/train
+        half = len(y)/2
+        X_train = X[:half]
+        y_train_true = y[:half]
+        y_train_pu = y_pu[:half]
+        X_test = X[half:]
+        y_test_true = y[half:]
+        y_test_pu = y_pu[half:]
+        
+        #Get f1 score with pu_learning
+        print "PU learning in progress..."
+        estimator = RandomForestClassifier(n_estimators=100,
+                                           criterion='gini', 
+                                           bootstrap=True,
+                                           n_jobs=1)
+        pu_estimator = PUAdapter(estimator)
+        pu_estimator.fit(X_train,y_train_pu)
+        y_pred = pu_estimator.predict(X_test)
+        precision, recall, f1_score, _ = precision_recall_fscore_support(y_test_true, y_pred)
+        pu_f1_scores.append(f1_score[1])
+        print "F1 score: ", f1_score[1]
+        print "Precision: ", precision[1]
+        print "Recall: ", recall[1]
+        print
+        
+        #Get f1 score without pu_learning
+        print "Regular learning in progress..."
+        estimator = RandomForestClassifier(n_estimators=100,
+                                           criterion='gini', 
+                                           bootstrap=True,
+                                           n_jobs=1)
+        estimator.fit(X_train,y_train_pu)
+        y_pred = estimator.predict(X_test)
+        precision, recall, f1_score, _ = precision_recall_fscore_support(y_test_true, y_pred)
+        reg_f1_scores.append(f1_score[1])
+        print "F1 score: ", f1_score[1]
+        print "Precision: ", precision[1]
+        print "Recall: ", recall[1]
+        print
+        print
+    plt.title("Random forest with/without PU learning")
+    plt.plot(n_sacrifice_iter, pu_f1_scores, label='PU Adapted Random Forest')
+    plt.plot(n_sacrifice_iter, reg_f1_scores, label='Random Forest')
+    plt.xlabel('Number of positive examples hidden in the unlabled set')
+    plt.ylabel('F1 Score')
+    plt.legend()
+    plt.show()
     
