@@ -45,9 +45,13 @@ def load_breast_cancer(path):
 if __name__ == '__main__':
     np.random.seed(42)
     
+    print "Loading dataset"
+    print
     X,y = load_breast_cancer('../datasets/breast-cancer-wisconsin.data')
     
     #Shuffle dataset
+    print "Shuffling dataset"
+    print
     permut = np.random.permutation(len(y))
     X = X[permut]
     y = y[permut]
@@ -60,35 +64,39 @@ if __name__ == '__main__':
     print len(np.where(y == -1.)[0])," are bening"
     print len(np.where(y == +1.)[0])," are malignant"
     print
+    
+    #Split test/train
+    print "Splitting dataset in test/train sets"
+    print
+    split = 2*len(y)/3
+    X_train = X[:split]
+    y_train = y[:split]
+    X_test = X[split:]
+    y_test = y[split:]
+    
+    print "Training set contains ", len(y_train), " examples"
+    print len(np.where(y_train == -1.)[0])," are bening"
+    print len(np.where(y_train == +1.)[0])," are malignant"
+    print
 
     pu_f1_scores = []
     reg_f1_scores = []
-    n_sacrifice_iter = range(0, len(np.where(y == +1.)[0]), 10)
+    n_sacrifice_iter = range(0, len(np.where(y_train == +1.)[0])-21, 5)
     for n_sacrifice in n_sacrifice_iter:
         #send some positives to the negative class! :)
         print "PU transformation in progress."
         print "Making ", n_sacrifice, " malignant examples bening."
         print
-        y_pu = np.copy(y)
-        pos = np.where(y == +1.)[0]
+        y_train_pu = np.copy(y_train)
+        pos = np.where(y_train == +1.)[0]
         np.random.shuffle(pos)
         sacrifice = pos[:n_sacrifice]
-        y_pu[sacrifice] = -1.
+        y_train_pu[sacrifice] = -1.
         
         print "PU transformation applied. We now have:"
-        print len(np.where(y_pu == -1.)[0])," are bening"
-        print len(np.where(y_pu == +1.)[0])," are malignant"
+        print len(np.where(y_train_pu == -1.)[0])," are bening"
+        print len(np.where(y_train_pu == +1.)[0])," are malignant"
         print
-        
-    
-        #Split test/train
-        half = len(y)/2
-        X_train = X[:half]
-        y_train_true = y[:half]
-        y_train_pu = y_pu[:half]
-        X_test = X[half:]
-        y_test_true = y[half:]
-        y_test_pu = y_pu[half:]
         
         #Get f1 score with pu_learning
         print "PU learning in progress..."
@@ -99,7 +107,7 @@ if __name__ == '__main__':
         pu_estimator = PUAdapter(estimator)
         pu_estimator.fit(X_train,y_train_pu)
         y_pred = pu_estimator.predict(X_test)
-        precision, recall, f1_score, _ = precision_recall_fscore_support(y_test_true, y_pred)
+        precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred)
         pu_f1_scores.append(f1_score[1])
         print "F1 score: ", f1_score[1]
         print "Precision: ", precision[1]
@@ -114,7 +122,7 @@ if __name__ == '__main__':
                                            n_jobs=1)
         estimator.fit(X_train,y_train_pu)
         y_pred = estimator.predict(X_test)
-        precision, recall, f1_score, _ = precision_recall_fscore_support(y_test_true, y_pred)
+        precision, recall, f1_score, _ = precision_recall_fscore_support(y_test, y_pred)
         reg_f1_scores.append(f1_score[1])
         print "F1 score: ", f1_score[1]
         print "Precision: ", precision[1]
