@@ -46,12 +46,22 @@ class PUAdapter(object):
         '''
         #The following are indexes
         positives = np.where(y == 1.)[0]
+
+        if len(positives) < 21:
+            raise('Not enough positive examples to estimate p(s=1|y=1,x)')
+        
+        np.random.shuffle(positives)
+        hold_out = positives[:20]
+        X_hold_out = X[hold_out]
+        X = np.delete(X, hold_out,0)
+        y = np.delete(y, hold_out)
+        
         
         #We fit the estimator
         self.estimator.fit(X, y)
         
         #We estimate c using Elkan's estimator e_1
-        pred_probas = self.estimator.predict_proba(X[positives])[:,1]
+        pred_probas = self.estimator.predict_proba(X_hold_out)[:,1]
         #c is estimated as the average p(s=1|x) of all positive examples
         c = np.mean(pred_probas)
         print "p(s=1|y=1,x): ", c
