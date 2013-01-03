@@ -9,8 +9,7 @@ import numpy as np
 
 class PUAdapter(object):
     '''
-    Adapts any binary classifier that can predict the probabiity of an example being positive to positive-unlabled
-    learning using the method proposed by Elkan and Noto:
+    Adapts any probabilistic binary classifier to positive-unlabled learning using the method proposed by Elkan and Noto:
     
     Elkan, Charles, and Keith Noto. "Learning classifiers from only positive and unlabeled data."
     Proceeding of the 14th ACM SIGKDD international conference on Knowledge discovery and data mining. ACM, 2008.
@@ -21,7 +20,7 @@ class PUAdapter(object):
         '''
         Constructor
         
-        estimator -- An estimator of p(s=1|x). This estimator must implement:
+        estimator -- An estimator of p(s=1|x) that must implement:
                      * a predict_proba(X) method which takes a list of feature vectors
                        and outputs p(s=1|x) for each feature vector
                      * a fit(X, y) method which takes a list of feature vectors and
@@ -57,7 +56,7 @@ class PUAdapter(object):
         '''
         Fits an estimator of p(s=1|x) and estimates the value of c=p(s=1|y=1,x)
         
-        X -- List of feature vectors
+        X -- Precomputed kernel matrix
         y -- Labels associated to each feature vector in X
         '''
         #The following are indexes
