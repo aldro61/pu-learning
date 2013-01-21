@@ -16,7 +16,7 @@ class PUAdapter(object):
     '''
 
 
-    def __init__(self, estimator, precomputed_kernel=False):
+    def __init__(self, estimator, hold_out_ratio=0.1, precomputed_kernel=False):
         '''
         Constructor
         
@@ -30,6 +30,7 @@ class PUAdapter(object):
         '''
         self.estimator = estimator
         self.c = 1.0
+        self.hold_out_ratio = hold_out_ratio
         self.precomputed_kernel = precomputed_kernel
         
         
@@ -61,12 +62,13 @@ class PUAdapter(object):
         '''
         #The following are indexes
         positives = np.where(y == 1.)[0]
-
-        if len(positives) < 21:
-            raise('Not enough positive examples to estimate p(s=1|y=1,x)')
+        hold_out_size = np.ceil(len(positives) * self.hold_out_ratio)
+        print 'Holding out ', hold_out_size, ' positive examples to estimate p(s=1|y=1,x).'
+        if len(positives) <= hold_out_size:
+            raise('Not enough positive examples to estimate p(s=1|y=1,x). Need at least ' + str(hold_out_size + 1) + '.')
         
         np.random.shuffle(positives)
-        hold_out = positives[:20]
+        hold_out = positives[:hold_out_size]
         
         #Hold out test kernel matrix
         X_test_hold_out = X[hold_out]
@@ -83,7 +85,14 @@ class PUAdapter(object):
         self.estimator.fit(X, y)
         
         #We estimate c using Elkan's estimator e_1
-        pred_probas = self.estimator.predict_proba(X_test_hold_out)[:,1]
+        pred_probas = self.estimator.predict_proba(X_test_hold_out)
+        
+        #FIX ME
+        try:
+            pred_probas = pred_probas[:,1]
+        except:
+            pass
+        
         #c is estimated as the average p(s=1|x) of all positive examples
         c = np.mean(pred_probas)
         print "p(s=1|y=1,x): ", c
@@ -98,12 +107,13 @@ class PUAdapter(object):
         '''
         #The following are indexes
         positives = np.where(y == 1.)[0]
-
-        if len(positives) < 21:
-            raise('Not enough positive examples to estimate p(s=1|y=1,x)')
+        hold_out_size = np.ceil(len(positives) * self.hold_out_ratio)
+        print 'Holding out ', hold_out_size, ' positive examples to estimate p(s=1|y=1,x).'
+        if len(positives) <= hold_out_size:
+            raise('Not enough positive examples to estimate p(s=1|y=1,x). Need at least ' + str(hold_out_size + 1) + '.')
         
         np.random.shuffle(positives)
-        hold_out = positives[:20]
+        hold_out = positives[:hold_out_size]
         X_hold_out = X[hold_out]
         X = np.delete(X, hold_out,0)
         y = np.delete(y, hold_out)
@@ -113,7 +123,13 @@ class PUAdapter(object):
         self.estimator.fit(X, y)
         
         #We estimate c using Elkan's estimator e_1
-        pred_probas = self.estimator.predict_proba(X_hold_out)[:,1]
+        pred_probas = self.estimator.predict_proba(X_hold_out)
+        
+        try:
+            pred_probas = pred_probas[:,1]
+        except:
+            pass
+        
         #c is estimated as the average p(s=1|x) of all positive examples
         c = np.mean(pred_probas)
         print "p(s=1|y=1,x): ", c
@@ -125,7 +141,14 @@ class PUAdapter(object):
         Predicts p(y=1|x) using the constant c estimated after fitting the estimator
         X -- List of feature vectors
         '''
-        return self.estimator.predict_proba(X)[:,1] / self.c
+        probas = self.estimator.predict_proba(X)
+        
+        try:
+            probas = probas[:,1]
+        except:
+            pass
+        
+        return probas / self.c
     
     
     def predict(self, X, treshold=0.5):
@@ -146,3 +169,4 @@ class PUAdapter(object):
         return np.array(predictions)
         
         
+
