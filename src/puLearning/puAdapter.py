@@ -31,8 +31,11 @@ class PUAdapter(object):
         self.estimator = estimator
         self.c = 1.0
         self.hold_out_ratio = hold_out_ratio
-        self.precomputed_kernel = precomputed_kernel
         
+        if precomputed_kernel:
+            self.fit = self.__fit_precomputed_kernel
+        else:
+            self.fit = self.__fit_no_precomputed_kernel
         
     def __str__(self):
         desc = 'Estimator:' + str(self.estimator) + '\n'
@@ -40,20 +43,7 @@ class PUAdapter(object):
         return desc
     
     
-    def fit(self, X, y):
-        '''
-        Fits an estimator of p(s=1|x) and estimates the value of c=p(s=1|y=1,x)
-        
-        X -- List of feature vectors
-        y -- Labels associated to each feature vector in X
-        '''
-        if self.precomputed_kernel:
-            return self.fit_precomputed_kernel(X,y)
-        else:
-            return self.fit_no_precomputed_kernel(X,y)
-    
-    
-    def fit_precomputed_kernel(self, X, y):
+    def __fit_precomputed_kernel(self, X, y):
         '''
         Fits an estimator of p(s=1|x) and estimates the value of c=p(s=1|y=1,x)
         
@@ -98,7 +88,7 @@ class PUAdapter(object):
         print "p(s=1|y=1,x): ", c
         self.c = c
         
-    def fit_no_precomputed_kernel(self, X, y):
+    def __fit_no_precomputed_kernel(self, X, y):
         '''
         Fits an estimator of p(s=1|x) and estimates the value of c=p(s=1|y=1,x)
         
@@ -159,14 +149,7 @@ class PUAdapter(object):
         treshold -- The decision treshold between the positive and the negative class
         labels -- The labels for the positive and negative classes
         '''
-        pred_probas = self.predict_proba(X)
-        predictions = []
-        for p in pred_probas:
-            if p > treshold:
-                predictions.append(1.)
-            else:
-                predictions.append(-1.)
-        return np.array(predictions)
+        return [1. if p > treshold else -1. for p in self.predict_proba(X)]
         
         
 
