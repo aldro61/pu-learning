@@ -33,7 +33,7 @@ if __name__ == '__main__':
                     kernel='rbf',
                     gamma=0.4,
                     probability=True)
-    pu_estimator = PUAdapter(estimator)
+    pu_estimator = PUAdapter(estimator, hold_out_ratio=0.2)
     
     pu_estimator.fit(X, y)
     
