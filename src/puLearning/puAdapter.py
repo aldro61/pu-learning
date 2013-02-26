@@ -147,7 +147,6 @@ class PUAdapter(object):
         
         X -- List of feature vectors
         treshold -- The decision treshold between the positive and the negative class
-        labels -- The labels for the positive and negative classes
         '''
         return [1. if p > treshold else -1. for p in self.predict_proba(X)]
         
