@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
-'''
+"""
 Created on Dec 21, 2012
 
 @author: Alexandre
-'''
+"""
 from puLearning.puAdapter import PUAdapter
 from sklearn.svm import SVC
 from sklearn.datasets import make_classification
@@ -39,5 +39,6 @@ if __name__ == '__main__':
     
     print pu_estimator
     print
-    print "Nombre de désaccords: ", len(np.where((pu_estimator.predict(X, treshold=0.5) == estimator.predict(X)) == False)[0])
-    print "Nombre d'accords: ", len(np.where((pu_estimator.predict(X, treshold=0.5) == estimator.predict(X)) == True)[0])
+    print "Comparison of estimator and PUAdapter(estimator):"
+    print "Number of disagreements: ", len(np.where((pu_estimator.predict(X) == estimator.predict(X)) == False)[0])
+    print "Number of agreements: ", len(np.where((pu_estimator.predict(X) == estimator.predict(X)) == True)[0])

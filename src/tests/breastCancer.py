@@ -1,21 +1,21 @@
-'''
+"""
 Created on Dec 22, 2012
 
 @author: Alexandre
 
 The goal of this test is to verifiy that the PUAdapter really allows a regular estimator to
-achieve better accuracy in the case where the "negative" examples are contaminated with a
+achieve better accuracy in the case where the \"negative\" examples are contaminated with a
 number of positive examples.
 
 Here we use the breast cancer dataset from UCI. We purposely take a few malignant examples and
-assign them the bening label and consider the bening examples as being "unlabled". We then compare
-the performance of the estimator while using the PUAdapter and without using the PUAdapter. To 
+assign them the bening label and consider the bening examples as being \"unlabled\". We then compare
+the performance of the estimator while using the PUAdapter and without using the PUAdapter. To
 asses the performance, we use the F1 score, precision and recall.
 
-Results show that PUAdapteur greatly increases the performance of an estimator in the case where
+Results show that PUAdapter greatly increases the performance of an estimator in the case where
 the negative examples are contaminated with positive examples. We call this situation positive and
 unlabled learning.
-'''
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 from puLearning.puAdapter import PUAdapter
@@ -117,7 +117,6 @@ if __name__ == '__main__':
         #Get f1 score without pu_learning
         print "Regular learning in progress..."
         estimator = RandomForestClassifier(n_estimators=100,
-                                           criterion='gini', 
                                            bootstrap=True,
                                            n_jobs=1)
         estimator.fit(X_train,y_train_pu)
