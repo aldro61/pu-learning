@@ -86,12 +86,13 @@ class PUAdapter(object):
         
         self.estimator_fitted = True
         
+        
     def __fit_no_precomputed_kernel(self, X, y):
         """
         Fits an estimator of p(s=1|x) and estimates the value of p(s=1|y=1,x)
 
         X -- List of feature vectors
-        y -- Labels associated to each feature vector in X
+        y -- Labels associated to each feature vector in X (Positive label: 1.0, Negative label: -1.0)
         """
         positives = np.where(y == 1.)[0]
         hold_out_size = np.ceil(len(positives) * self.hold_out_ratio)
