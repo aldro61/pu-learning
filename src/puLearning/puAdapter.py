@@ -150,7 +150,7 @@ class PUAdapter(object):
         if not self.estimator_fitted:
             raise Exception('The estimator must be fitted before calling predict(...).')
 
-        return [1. if p > treshold else -1. for p in self.predict_proba(X)]
+        return np.array([1. if p > treshold else -1. for p in self.predict_proba(X)])
         
         
 
